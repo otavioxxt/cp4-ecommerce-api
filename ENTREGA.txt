@@ -1,0 +1,28 @@
+================================================================
+CP4 - Advanced Business Development with .NET - 2026
+Arquitetura, Otimizacao, Testes e Observabilidade em APIs
+FIAP - Turma 2TDSR
+================================================================
+
+TEMA: E-Commerce - Produtos e Pedidos
+
+REPOSITORIO PUBLICO:
+https://github.com/otavioxxt/cp4-ecommerce-api
+
+INTEGRANTES:
+1) Nickolas Davi                - RM564105 - 2TDSR
+2) Samara Vilela de Oliveira    - RM566133 - 2TDSR
+3) Natalia Cristina de Souza    - RM564099 - 2TDSR
+4) Otavio Ferreira              - RM565960 - 2TDSR
+5) Rodrigo Carvalho Silva       - RM565162 - 2TDSR
+
+----------------------------------------------------------------
+OBSERVACOES
+----------------------------------------------------------------
+- Solution: CP4.ECommerce.sln (.NET 8, ASP.NET Core com Controllers)
+- Camadas: Presentation / Application / Domain / Infrastructure
+- Banco: Oracle FIAP via Entity Framework Core
+- Rodar a API:  dotnet run --project Presentation/CP4.ECommerce.API
+- Swagger:      http://localhost:5080/swagger
+- Rodar testes: dotnet test  (92 testes, todos passando)
+- Health check: http://localhost:5080/api/health/live

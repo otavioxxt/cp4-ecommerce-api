@@ -1,0 +1,29 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+*.sln.docstates
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+
+## Visual Studio / Rider / VS Code
+.vs/
+.vscode/
+.idea/
+*.DotSettings.user
+
+## Logs gerados em runtime
+logs/
+*.log
+
+## Banco local e segredos
+*.db
+appsettings.Local.json
+secrets.json
+
+## Testes
+[Tt]est[Rr]esult*/
+coverage*.json
+coverage*.xml
