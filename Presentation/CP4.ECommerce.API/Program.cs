@@ -76,25 +76,34 @@ builder.Services.Configure<GzipCompressionProviderOptions>(options =>
 });
 
 // ---------------------------------------------------------------------------
-// RATE LIMIT - janela fixa
+// RATE LIMIT - janela fixa, contada por IP do cliente
+//
+// Cada IP tem a sua propria cota: o IP e a chave da particao, entao um cliente
+// que estoura o limite nao atrapalha os outros.
 // ---------------------------------------------------------------------------
 builder.Services.AddRateLimiter(options =>
 {
-    options.AddFixedWindowLimiter(policyName: "rateLimitePolicy", opt =>
-    {
-        opt.PermitLimit = 5;
-        opt.Window = TimeSpan.FromSeconds(10);
-        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        opt.QueueLimit = 2;
-    });
+    options.AddPolicy("rateLimitePolicy", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "desconhecido",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromSeconds(10),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 2
+            }));
 
-    options.AddFixedWindowLimiter(policyName: "rateLimitePolicy2", opt =>
-    {
-        opt.PermitLimit = 3;
-        opt.Window = TimeSpan.FromSeconds(5);
-        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        opt.QueueLimit = 2;
-    });
+    options.AddPolicy("rateLimitePolicy2", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "desconhecido",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 3,
+                Window = TimeSpan.FromSeconds(5),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 2
+            }));
 
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 });
@@ -157,6 +166,9 @@ app.UseResponseCompression();   // Habilitando a compressao
 app.UseRateLimiter();           // Habilitando o Rate Limiter
 
 app.MapControllers();
+
+// Visao geral: roda todos os checks registrados (self + Oracle).
+app.MapHealthChecks("/health");
 
 app.MapHealthChecks("/health/live", new HealthCheckOptions
 {

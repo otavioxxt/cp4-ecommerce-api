@@ -264,9 +264,10 @@ curl -s -H "Accept-Encoding: br" -o /dev/null -w "%{size_download} bytes\n" \
 
 ### Rate Limiting
 
-Duas políticas de janela fixa:
+Duas políticas de janela fixa, **particionadas por IP do cliente** — cada IP tem a
+sua própria cota, então um cliente que estoura o limite não afeta os demais:
 
-| Política | Limite |
+| Política | Limite por IP |
 | --- | --- |
 | `rateLimitePolicy` | 5 requisições / 10 s, fila de 2 |
 | `rateLimitePolicy2` | 3 requisições / 5 s, fila de 2 |
@@ -288,6 +289,7 @@ done
 
 | Endpoint | Tipo | Verifica |
 | --- | --- | --- |
+| `GET /health` | Geral | todos os checks registrados |
 | `GET /api/health/live` | Liveness | só o processo da API |
 | `GET /api/health/db` | Readiness | conectividade com o Oracle |
 | `GET /health/live` e `/health/db` | — | os mesmos checks por *minimal API* |
