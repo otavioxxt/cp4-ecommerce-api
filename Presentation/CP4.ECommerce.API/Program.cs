@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -176,9 +178,42 @@ if (builder.Configuration.GetValue("Database:InicializarNaSubida", true))
     using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
 
+    var tabelasDoProjeto = new[] { "tb_item_pedido", "tb_pedido", "tb_produto" };
+
     try
     {
-        await context.Database.EnsureCreatedAsync();
+        // Quais tabelas do projeto ja existem no schema. O EnsureCreated nao
+        // serve aqui: ele so cria o schema quando o banco esta totalmente
+        // vazio, e o schema da FIAP ja tem tabelas de outros trabalhos.
+        var existentes = await context.Database
+            .SqlQueryRaw<string>(
+                "SELECT table_name AS \"Value\" FROM user_tables " +
+                "WHERE table_name IN ('tb_item_pedido', 'tb_pedido', 'tb_produto')")
+            .ToListAsync();
+
+        var recriar = builder.Configuration.GetValue("Database:RecriarTabelas", false);
+        var incompleto = existentes.Count > 0 && existentes.Count < tabelasDoProjeto.Length;
+
+        if (recriar || incompleto)
+        {
+            foreach (var tabela in tabelasDoProjeto.Where(existentes.Contains))
+            {
+                await context.Database.ExecuteSqlRawAsync(
+                    "DROP TABLE \"" + tabela + "\" CASCADE CONSTRAINTS");
+
+                Log.Warning("Tabela {Tabela} removida.", tabela);
+            }
+
+            existentes.Clear();
+        }
+
+        if (existentes.Count == 0)
+        {
+            await context.GetService<IRelationalDatabaseCreator>().CreateTablesAsync();
+
+            Log.Information("Tabelas criadas no banco de dados.");
+        }
+
         await DataSeeder.SeedAsync(context);
 
         Log.Information("Banco de dados inicializado com sucesso.");

@@ -27,5 +27,12 @@ public class ApplicationContext : DbContext
             .WithOne()
             .HasForeignKey(i => i.PedidoId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // O Oracle 19c nao tem o tipo BOOLEAN, entao o Ativo e gravado
+        // como NUMBER(1): 1 para ativo e 0 para inativo.
+        modelBuilder.Entity<ProdutoEntity>()
+            .Property(p => p.Ativo)
+            .HasConversion<int>()
+            .HasColumnType("NUMBER(1)");
     }
 }

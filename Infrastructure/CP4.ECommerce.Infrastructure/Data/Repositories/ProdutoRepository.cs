@@ -110,8 +110,12 @@ public class ProdutoRepository : IProdutoRepository
     {
         var termo = (nome ?? string.Empty).Trim().ToLower();
 
-        return await _context.Produto
+        // CountAsync em vez de AnyAsync: o AnyAsync gera "THEN True ELSE False",
+        // e o Oracle nao tem literais booleanos (ORA-00904).
+        var total = await _context.Produto
             .AsNoTracking()
-            .AnyAsync(x => x.Nome.ToLower() == termo && (ignorarId == null || x.Id != ignorarId));
+            .CountAsync(x => x.Nome.ToLower() == termo && (ignorarId == null || x.Id != ignorarId));
+
+        return total > 0;
     }
 }

@@ -46,7 +46,9 @@ public static class DataSeeder
 
     public static async Task SeedAsync(ApplicationContext context)
     {
-        if (await context.Produto.AnyAsync())
+        // CountAsync em vez de AnyAsync: o AnyAsync gera "THEN True ELSE False",
+        // e o Oracle nao tem literais booleanos (ORA-00904).
+        if (await context.Produto.CountAsync() > 0)
             return;
 
         var aleatorio = new Random(20260916);
