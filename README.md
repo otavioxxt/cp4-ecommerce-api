@@ -427,11 +427,11 @@ Content-Type: application/json
 | Paginação | `PageResultModel<T>`, `Skip`/`Take` nos repositórios |
 | Índices de banco | 8 índices por `[Index]` nas entidades |
 | Compressão de dados | `AddResponseCompression` — Brotli e Gzip, `Fastest` |
-| Rate Limit | `AddFixedWindowLimiter` — duas políticas, retorno 429 |
+| Rate Limit | `AddPolicy` + `RateLimitPartition` — janela fixa por IP, retorno 429 |
 | Swagger Annotations | `[SwaggerOperation]`, `[SwaggerResponse]`, `[SwaggerParameter]` e `Doc/Samples` |
 | Testes de unidade | `Tests/CP4.ECommerce.Tests.Unit` |
 | Testes funcionais | `Tests/CP4.ECommerce.Tests.Functional` |
 | Logging estruturado | Serilog na `Program.cs` + `ILogger` nos UseCases e controllers |
-| Health Checks | `/api/health/live` e `/api/health/db` |
+| Health Checks | `/health`, `/health/live`, `/health/db`, `/api/health/live` e `/api/health/db` |
 | Tracing e métricas | `AddOpenTelemetry().UseAzureMonitor(...)` |
 | README | este arquivo |
